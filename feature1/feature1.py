@@ -26,10 +26,12 @@ def load_data() -> 'dataframes':
     return df, df_learning
 
 
+# I chose K-means because you can choose the number of clusters, and it is easy to understand :)
+# I watched this YouTube video to undersdand how K-means works : https://www.youtube.com/watch?v=4b5d3muPQmA
 def cluster(df, df_learning, k=3) -> 'dataframe':
     """
-    This function clusters the trees by their size using the KMeans algorithm
-    :param df: the data frame with all columns
+    This function clusters the trees by their size using the KMeans algorithm. The cluster n° is stored in df
+    :param df: the original data frame with all columns
     :param df_learning: the data frame with the selected columns for learning
     :param k: the number of clusters
     :return: the original data frame with a new column 'cluster' that indicates the cluster n°
