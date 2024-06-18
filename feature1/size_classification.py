@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 import matplotlib.colors as mcolors
 import folium
-from sklearn.preprocessing import OrdinalEncoder
+from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
@@ -19,9 +19,12 @@ def load_data() -> 'dataframes':
     # choose the columns to keep
     df_learning = df[['haut_tot', 'haut_tronc', 'tronc_diam', 'age_estim', 'fk_stadedev', 'fk_port']].copy()
 
-    # use OrdinalEncoder to encode the categorical columns : fk_stadedev and fk_port
-    encoder = OrdinalEncoder()
-    df_learning[['fk_stadedev', 'fk_port']] = encoder.fit_transform(df_learning[['fk_stadedev', 'fk_port']])
+    # use OrdinalEncoder to encode fk_stadedev
+    encoder_stadedev = OrdinalEncoder(categories=[['Jeune', 'Adulte', 'vieux', 'senescent']])
+    df_learning[['fk_stadedev']] = encoder_stadedev.fit_transform(df_learning[['fk_stadedev']])
+    # use OneHotEncoder to encode fk_port
+    encoder_port = OneHotEncoder()
+    df_learning[['fk_port']] = encoder_port.fit_transform(df_learning[['fk_port']])
 
     return df, df_learning
 
