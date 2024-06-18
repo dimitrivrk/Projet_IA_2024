@@ -24,10 +24,10 @@ def main1():
            on the diagonal you can see the distribution of anomalies in each variable
     \n''')
 
-    print('plotting ...')
+    print('plotting ...\n')
     evaluate_classifications(df_learning)
     plt.show()
-    k = int(input('Choose a number of clusters: '))
+    k = int(input('\033[34mChoose a number of clusters: \033[0m'))
 
     df = cluster(df, df_learning, k)
     print('plotting ...')
@@ -38,7 +38,7 @@ def main1():
 
     detect_anomalies(df_learning)
     print('plotting ...')
-    plot_anomalies(df_learning, contamination=0.1)
+    plot_anomalies(df, df_learning, contamination=0.1)
     plot_number_anomalies(df_learning, ocsvm=True, iforest=True)
     plt.show()
 

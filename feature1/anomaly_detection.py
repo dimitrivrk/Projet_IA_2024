@@ -5,6 +5,11 @@ import numpy as np
 import seaborn as sns
 
 
+# I watched this YouTube video to understand the Isolation Forest algorithm : https://www.youtube.com/watch?v=kN--TRv1UDY
+# I watched this YouTube video to help me implement the Isolation Forest algorithm : https://www.youtube.com/watch?v=5NcbVYb7v4Y
+# and this video for OneClassSVM : https://www.youtube.com/watch?v=55l6keimE8M
+
+
 def anomaly_detection_OneClassSVM(df_learning, nu=0.05) -> 'indexes':
     """
     This function detects anomalies in the data using the One-Class SVM algorithm
@@ -34,7 +39,7 @@ def anomaly_detection_IsolationForest(df_learning, contamination=0.01, bootstrap
     return anomalies_indexes
 
 
-def plot_anomalies(df_learning, contamination=0.1):
+def plot_anomalies(df, df_learning, contamination=0.1):
     """
     This function plots the trees with all variables (6) by pairs.
     The color indicates which are the anomalies detected by the Isolation Forest algorithm.
@@ -56,6 +61,26 @@ def plot_anomalies(df_learning, contamination=0.1):
     plt.suptitle('Anomaly Detection Using Isolation Forest\n'
                  'number of anomalies: ' + str(len(df_learning[df_learning['anomaly'] == -1])),
                  y=0.95, fontsize=10)
+    # plt.show()
+
+    df['color'] = df_learning['anomaly'].apply(lambda x: 'red' if x == -1 else 'green')
+    # Plot normal data points first
+    plt.figure(figsize=(10, 5))
+    plt.scatter(
+        df[df['color'] == 'green']['longitude'],
+        df[df['color'] == 'green']['latitude'],
+        c='green',
+        s=3
+    )
+    # Plot anomalies on top
+    plt.scatter(
+        df[df['color'] == 'red']['longitude'],
+        df[df['color'] == 'red']['latitude'],
+        c='red',
+        s=3
+    )
+    plt.title('Anomaly Detection Using Isolation Forest\n'
+              'number of anomalies: ' + str(len(df_learning[df_learning['anomaly'] == -1])))
     # plt.show()
 
 

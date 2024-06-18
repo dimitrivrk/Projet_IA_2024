@@ -8,8 +8,6 @@ from sklearn.preprocessing import OrdinalEncoder
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
-from anomaly_detection import anomaly_detection_OneClassSVM, anomaly_detection_IsolationForest, plot_anomalies
-
 
 def load_data() -> 'dataframes':
     """
@@ -170,68 +168,3 @@ def folium_map(df, k=3) -> 'map in html file':
         ).add_to(m)
 
     m.save('map.html')
-
-
-def choose_k() -> 'int, plot map':
-    """
-    the user choose a number of clusters
-    :return: display a basic map, tree color indicate the cluster
-    """
-    k = int(input('Enter the number of clusters : '))
-    df, df_learning = load_data()
-    df = cluster(df, df_learning, k)
-    plot_clusters(df, k)
-    return k
-
-
-def plot_number_anomalies(ocsvm: bool = True, iforest: bool = True):
-    df, df_learning = load_data()
-
-    if ocsvm:
-        nu_values = np.arange(0.01, 0.11, 0.01)
-
-        # Lists to store the number of anomalies detected
-        svm_anomalies = []
-
-        # Detect anomalies using OneClassSVM for each nu value
-        for nu in nu_values:
-            anomalies_indexes = anomaly_detection_OneClassSVM(df_learning, nu)
-            svm_anomalies.append(len(anomalies_indexes[0]))
-
-        # Plot the number of anomalies detected for each nu value
-        plt.figure(figsize=(10, 5))
-        plt.plot(nu_values, svm_anomalies, marker='o')
-        plt.title('Number of anomalies detected by OneClassSVM for different nu values')
-        plt.xlabel('nu value')
-        plt.ylabel('Number of anomalies')
-        # plt.show()
-
-    if iforest:
-        contamination_values = np.arange(0.01, 0.5, 0.01)
-
-        if_anomalies = []
-        # Detect anomalies using IsolationForest for each contamination value
-        for contamination in contamination_values:
-            anomalies_indexes = anomaly_detection_IsolationForest(df_learning, contamination)
-            if_anomalies.append(len(anomalies_indexes[0]))
-
-        # Plot the number of anomalies detected for each contamination value
-        plt.figure(figsize=(10, 5))
-        plt.plot(contamination_values, if_anomalies, marker='o')
-        plt.title('Number of anomalies detected by IsolationForest for different contamination values')
-        plt.xlabel('contamination value')
-        plt.ylabel('Number of anomalies')
-        # plt.show()
-
-
-def plot_anomalies_():
-    df, df_learning = load_data()
-    plot_anomalies(df_learning)
-#
-
-if __name__ == '__main__':
-    # find_best_k()
-    # k = choose_k()
-    # show_map(k)
-
-    plot_anomalies_()
