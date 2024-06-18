@@ -9,42 +9,49 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.model_selection import GridSearchCV
 
-datarbre = pd.read_csv("Data_Arbre.csv")
-data_learning = datarbre[['haut_tronc', 'tronc_diam', 'fk_stadedev', 'feuillage', 'fk_nomtech', 'clc_nbr_diag']].copy()
 
-# ENCODING
-ordinal_encoder = OrdinalEncoder(categories=[['Jeune', 'Adulte', 'vieux', 'senescent']])
-onehot_encoder = OneHotEncoder(sparse_output=False)  # Ensure dense output
+def load_and_preprocess_data():
+    datarbre = pd.read_csv("Data_Arbre.csv")
+    data_learning = datarbre[['haut_tronc', 'tronc_diam', 'fk_stadedev', 'feuillage', 'fk_nomtech', 'clc_nbr_diag']].copy()
 
-data_learning["fk_stadedev"] = ordinal_encoder.fit_transform(data_learning[["fk_stadedev"]])
+    # ENCODING
+    ordinal_encoder = OrdinalEncoder(categories=[['Jeune', 'Adulte', 'vieux', 'senescent']])
+    onehot_encoder = OneHotEncoder(sparse_output=False)  # Ensure dense output
 
-# Fit and transform the one-hot encoder for each categorical feature
-feuillage_encoded = onehot_encoder.fit_transform(data_learning[["feuillage"]])
-feuillage_encoded_df = pd.DataFrame(feuillage_encoded, columns=onehot_encoder.get_feature_names_out(["feuillage"]))
+    data_learning["fk_stadedev"] = ordinal_encoder.fit_transform(data_learning[["fk_stadedev"]])
 
-nomtech_encoded = onehot_encoder.fit_transform(data_learning[["fk_nomtech"]])
-nomtech_encoded_df = pd.DataFrame(nomtech_encoded, columns=onehot_encoder.get_feature_names_out(["fk_nomtech"]))
+    # Fit and transform the one-hot encoder for each categorical feature
+    feuillage_encoded = onehot_encoder.fit_transform(data_learning[["feuillage"]])
+    feuillage_encoded_df = pd.DataFrame(feuillage_encoded, columns=onehot_encoder.get_feature_names_out(["feuillage"]))
 
-# Drop the original categorical columns and concatenate the encoded columns
-data_learning.drop(columns=["feuillage", "fk_nomtech"], inplace=True)
-data_learning = pd.concat([data_learning, feuillage_encoded_df, nomtech_encoded_df], axis=1)
+    nomtech_encoded = onehot_encoder.fit_transform(data_learning[["fk_nomtech"]])
+    nomtech_encoded_df = pd.DataFrame(nomtech_encoded, columns=onehot_encoder.get_feature_names_out(["fk_nomtech"]))
 
-#NORMALISATING
-ss = StandardScaler()
-# apply the standardization on the data_learning
-data_learning[["haut_tronc"]] = ss.fit_transform(data_learning[["haut_tronc"]])
-data_learning[["tronc_diam"]] = ss.fit_transform(data_learning[["tronc_diam"]])
+    # Drop the original categorical columns and concatenate the encoded columns
+    data_learning.drop(columns=["feuillage", "fk_nomtech"], inplace=True)
+    data_learning = pd.concat([data_learning, feuillage_encoded_df, nomtech_encoded_df], axis=1)
 
-X = data_learning
-Y = datarbre["age_estim"]
+    # NORMALISATING
+    ss = StandardScaler()
+    # apply the standardization on the data_learning
+    data_learning[["haut_tronc"]] = ss.fit_transform(data_learning[["haut_tronc"]])
+    data_learning[["tronc_diam"]] = ss.fit_transform(data_learning[["tronc_diam"]])
 
-#SPLIT
-X_train, X_test, y_train, y_test = train_test_split(X, Y,
-                                                    train_size=0.8,
-                                                    test_size=0.2,
-                                                    random_state=42)
+    X = data_learning
+    Y = datarbre["age_estim"]
 
-#RANDOM FOREST
+    # SPLIT
+    X_train, X_test, y_train, y_test = train_test_split(X, Y,
+                                                        train_size=0.8,
+                                                        test_size=0.2,
+                                                        random_state=42)
+
+    return X_train, X_test, y_train, y_test
+
+
+X_train, X_test, y_train, y_test = load_and_preprocess_data()
+
+# RANDOM FOREST
 rfr = RandomForestRegressor(n_estimators=200,
                             min_samples_split=2,
                             max_samples=0.8,
