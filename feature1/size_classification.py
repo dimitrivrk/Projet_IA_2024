@@ -17,14 +17,17 @@ def load_data() -> 'dataframes':
     df = pd.read_csv('Data_Arbre.csv')
 
     # choose the columns to keep
-    df_learning = df[['haut_tot', 'haut_tronc', 'tronc_diam', 'age_estim', 'fk_stadedev', 'fk_port']].copy()
+    df_learning = df[['haut_tot', 'haut_tronc', 'tronc_diam', 'fk_port']].copy()
 
     # use OrdinalEncoder to encode fk_stadedev
-    encoder_stadedev = OrdinalEncoder(categories=[['Jeune', 'Adulte', 'vieux', 'senescent']])
-    df_learning[['fk_stadedev']] = encoder_stadedev.fit_transform(df_learning[['fk_stadedev']])
+    # encoder_stadedev = OrdinalEncoder(categories=[['Jeune', 'Adulte', 'vieux', 'senescent']])
+    # df_learning[['fk_stadedev']] = encoder_stadedev.fit_transform(df_learning[['fk_stadedev']])
     # use OneHotEncoder to encode fk_port
-    encoder_port = OneHotEncoder()
-    df_learning[['fk_port']] = encoder_port.fit_transform(df_learning[['fk_port']])
+    encoder_port = OneHotEncoder(sparse_output=False)
+    fk_port_encoded = encoder_port.fit_transform(df_learning[['fk_port']])
+    fk_port_encoded_df = pd.DataFrame(fk_port_encoded, columns=encoder_port.get_feature_names_out(['fk_port']))
+    df_learning.drop(columns=['fk_port'], inplace=True)
+    df_learning = pd.concat([df_learning, fk_port_encoded_df], axis=1)
 
     return df, df_learning
 
@@ -116,23 +119,37 @@ def evaluate_classifications(df_learning, max_clusters: int = 10) -> 'plots':
 def plot_clusters(df, k=3) -> 'plot map':
     """
     This function plots the trees on a basic 2D space with different colors for each cluster
+    and boxplots of haut_tot for each cluster
     :param df: the original data frame (with the new column 'cluster')
     :param k: number of clusters
     :return: check the plots
     """
-    colors = colors = cm.rainbow(np.linspace(0, 1, k))
+    colors = cm.rainbow(np.linspace(0, 1, k))
     labels = [f'Cluster {i+1}' for i in range(k)]
 
+    fig, (map_, boxplots) = plt.subplots(1, 2, width_ratios=(60, 40), figsize=(10, 5))
+
     for i in range(k):
-        plt.scatter(df[df['cluster'] == i]['longitude'], df[df['cluster'] == i]['latitude'],
+        map_.scatter(df[df['cluster'] == i]['longitude'], df[df['cluster'] == i]['latitude'],
                     s=0.5,
                     color=colors[i],
                     label=labels[i])
 
     # increase the size of dots in the legend, they were too small
-    [handle.set_sizes([10]) for handle in plt.legend(loc='best').legend_handles]
-    plt.title('basic map')
+    [handle.set_sizes([10]) for handle in map_.legend(loc='best').legend_handles]
+    map_.set_title('basic map')
     # plt.show()
+
+
+    # boxplots of the haut_tot for each cluster
+    clusters_haut_tot = [df[df['cluster'] == i]['haut_tot'] for i in range(k)]
+    boxplots.set_ylabel('haut_tot')
+    bxplts = boxplots.boxplot(clusters_haut_tot, labels=labels, patch_artist=True)
+
+    # add colors to the boxplots, the same as the cluster in plot_clusters()
+    for patch, color in zip(bxplts['boxes'], colors):
+        patch.set_facecolor(color)
+
 
 
 def folium_map(df, k=3) -> 'map in html file':

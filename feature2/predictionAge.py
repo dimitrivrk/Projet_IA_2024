@@ -75,13 +75,8 @@ dtr.fit(X_train, y_train)
 dtr_prediction = dtr.predict(X_test)
 
 dtr_precision = r2_score(y_test, dtr_prediction)
-print("\nCART : ", dtr_precision)
-
 dtr_rmse = np.sqrt(mean_squared_error(y_test, dtr_prediction))
-print("Rmse : ", dtr_rmse)
-
 dtr_mae = mean_absolute_error(y_test, dtr_prediction)
-print("Mae : ", dtr_mae)
 print(f"CART :\nprécision={dtr_precision}\nrmse={dtr_rmse}\nmae={dtr_mae}\n")
 
 #NEURONES
@@ -97,6 +92,7 @@ mlp_rmse = np.sqrt(mean_squared_error(y_test, mlp_prediction))
 
 mlp_mae = mean_absolute_error(y_test, mlp_prediction)
 #print("Mae : ", mlp_mae)
+print(f"neuronnes (MLP):\nprécision={mlp_precision}\nrmse={mlp_rmse}\nmae={mlp_mae}\n")
 
 #PLS
 pls = PLSRegression(n_components=4)

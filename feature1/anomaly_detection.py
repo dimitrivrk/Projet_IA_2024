@@ -1,10 +1,13 @@
 from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use('Qt5Agg')
 from sklearn.svm import OneClassSVM
 from sklearn.ensemble import IsolationForest
 import numpy as np
 import seaborn as sns
 
 
+# Todo : try DBSCAN, Local Outlier Factor, Elliptic Envelope
 # I watched this YouTube video to understand the Isolation Forest algorithm : https://www.youtube.com/watch?v=kN--TRv1UDY
 # I watched this YouTube video to help me implement the Isolation Forest algorithm : https://www.youtube.com/watch?v=5NcbVYb7v4Y
 # and this video for OneClassSVM : https://www.youtube.com/watch?v=55l6keimE8M
@@ -21,7 +24,7 @@ def anomaly_detection_OneClassSVM(df_learning, nu=0.05) -> 'indexes':
     result = anomaly_detector.fit_predict(df_learning)
     anomalies_indexes = np.where(result == -1)
 
-    return anomalies_indexes
+    return anomalies_indexes[0]
 
 
 def anomaly_detection_IsolationForest(df_learning, contamination=0.01, bootstrap=False) -> 'indexes':
@@ -36,52 +39,54 @@ def anomaly_detection_IsolationForest(df_learning, contamination=0.01, bootstrap
     result = anomaly_detector.fit_predict(df_learning)
     anomalies_indexes = np.where(result == -1)
 
-    return anomalies_indexes
+    return anomalies_indexes[0]
 
 
-def plot_anomalies(df, df_learning, contamination=0.1):
+def plot_anomalies(df, anom_IF, anom_OCSVM, anom_both):
     """
-    This function plots the trees with all variables (6) by pairs.
-    The color indicates which are the anomalies detected by the Isolation Forest algorithm.
+    This function plots the trees with pairs of variables.
+    The fk_port varaible can't be shown, it would add too many subplots (one for each category).
+    The color indicates which are the anomalies detected by the Isolation Forest and One Class SVM algorithms.
     On the diagonal, you can see the distribution of anomalies in each variable.
-    :param df_learning: the data frame with the selected columns for learning
-    :param contamination: influence the number of anomalies detected
-    :return:
     """
-    model_IF = IsolationForest(contamination=contamination)
-    model_IF.fit(df_learning)
-    df_learning['anomaly'] = model_IF.predict(df_learning)
-    palette = ['orange', 'blue']
-    sns.pairplot(
-        df_learning,
-        vars=['haut_tot', 'haut_tronc', 'tronc_diam', 'age_estim', 'fk_stadedev', 'fk_port'],
-        hue='anomaly',
-        palette=palette
-    )
-    plt.suptitle('Anomaly Detection Using Isolation Forest\n'
-                 'number of anomalies: ' + str(len(df_learning[df_learning['anomaly'] == -1])),
-                 y=0.95, fontsize=10)
-    # plt.show()
 
-    df['color'] = df_learning['anomaly'].apply(lambda x: 'red' if x == -1 else 'green')
+    # add a column to the data frame to store the color of the anomalies. 0: normal, 1: both, 2: OCSVM, 3: IF
+    df['color'] = 0
+    df.loc[anom_OCSVM, 'color'] = 2
+    df.loc[anom_IF, 'color'] = 3
+    df.loc[anom_both, 'color'] = 1
+
+    palette = ['yellow', 'orange', 'red']
+    colors = ['blue', 'red', 'orange', 'yellow']
+    # plot anomalies variables
+    sns.pairplot(
+        df,
+        vars=['haut_tot', 'haut_tronc', 'tronc_diam'],
+        hue='color',
+        palette=colors
+    )
+    title = f"Anomaly Detection Using Isolation Forest and OCSVM\nnumber of anomalies: {len(anom_IF)}, {len(anom_OCSVM)}"
+    plt.suptitle(title, y=0.95, fontsize=10)
+
+    # plot anomalies on a map
     # Plot normal data points first
     plt.figure(figsize=(10, 5))
     plt.scatter(
-        df[df['color'] == 'green']['longitude'],
-        df[df['color'] == 'green']['latitude'],
-        c='green',
+        df[df['color'] == 0]['longitude'],
+        df[df['color'] == 0]['latitude'],
+        c='blue',
         s=3
     )
     # Plot anomalies on top
+    plot_colors_anom = [colors[i] for i in df[df['color'] != 0]['color']]
     plt.scatter(
-        df[df['color'] == 'red']['longitude'],
-        df[df['color'] == 'red']['latitude'],
-        c='red',
+        df[df['color'] != 0]['longitude'],
+        df[df['color'] != 0]['latitude'],
+        c=plot_colors_anom,
         s=3
     )
-    plt.title('Anomaly Detection Using Isolation Forest\n'
-              'number of anomalies: ' + str(len(df_learning[df_learning['anomaly'] == -1])))
-    # plt.show()
+    plt.title('Anomaly Detection Using Isolation Forest and OCSVM\n'
+              f'number of anomalies detected by both methods: {len(anom_both)}')
 
 
 def plot_number_anomalies(df_learning, ocsvm: bool = True, iforest: bool = True):
@@ -130,9 +135,14 @@ def plot_number_anomalies(df_learning, ocsvm: bool = True, iforest: bool = True)
         # plt.show()
 
 
-def detect_anomalies(df_learning):
-    anomalies_indexes = anomaly_detection_OneClassSVM(df_learning, nu=0.05)
-    print(f'OneClassSVM detected {len(anomalies_indexes[0])} anomalies')
+def detect_anomalies(df_learning, nu=0.05, bootstrap=True):
+    anomalies_OCSVM = anomaly_detection_OneClassSVM(df_learning, nu=nu)
+    print(f'OneClassSVM detected {len(anomalies_OCSVM)} anomalies')
 
-    anomalies_indexes_ = anomaly_detection_IsolationForest(df_learning, bootstrap=True, contamination=0.05)
-    print(f'IsolationForest detected {len(anomalies_indexes_[0])} anomalies')
+    anomalies_IF = anomaly_detection_IsolationForest(df_learning, bootstrap=bootstrap, contamination=nu)
+    print(f'IsolationForest detected {len(anomalies_IF)} anomalies')
+
+    anomalies_in_both = [anomaly_index for anomaly_index in anomalies_IF if anomaly_index in anomalies_OCSVM]
+    print(f'anomalies detected by both methods ({len(anomalies_in_both)}):\n', anomalies_in_both)
+
+    return anomalies_IF, anomalies_OCSVM, anomalies_in_both

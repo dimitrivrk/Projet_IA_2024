@@ -20,15 +20,16 @@ def main1():
            close the plots to go to step 2
         2- show the trees clustered on maps, you first need to enter the number of clusters
            close the plot to go to step 3
-        3- detect and plot anomalies, the data is plotted by pair of varaibles and 
+        3- detect and plot anomalies, the data is plotted by pair of variables and 
            on the diagonal you can see the distribution of anomalies in each variable
+           (this step is quite long)
     \n''')
 
     print('plotting ...\n')
     evaluate_classifications(df_learning)
     plt.show()
-    k = int(input('\033[34mChoose a number of clusters: \033[0m'))
 
+    k = int(input('\033[34mChoose a number of clusters: \033[0m'))
     df = cluster(df, df_learning, k)
     print('plotting ...')
     plot_clusters(df, k)
@@ -36,10 +37,10 @@ def main1():
     print('\nThe folium/leaflet map is saved in the file map.html\n')
     plt.show()
 
-    detect_anomalies(df_learning)
+    anom_IF, anom_OCSVM, anom_both = detect_anomalies(df_learning, nu=0.1)
     print('plotting ...')
-    plot_anomalies(df, df_learning, contamination=0.1)
-    plot_number_anomalies(df_learning, ocsvm=True, iforest=True)
+    plot_anomalies(df, anom_IF, anom_OCSVM, anom_both)
+    # plot_number_anomalies(df_learning, ocsvm=True, iforest=True)
     plt.show()
 
 
