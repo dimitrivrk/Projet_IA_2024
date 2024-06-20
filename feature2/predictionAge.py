@@ -65,6 +65,7 @@ if __name__ == '__main__':
     rfr_rmse = np.sqrt(mean_squared_error(y_test, rfr_prediction))
     rfr_mae = mean_absolute_error(y_test, rfr_prediction)
     print(f"Random Forest :\nprécision={rfr_precision}\nrmse={rfr_rmse}\nmae={rfr_mae}\n")
+    neg_mean_square_error = -rfr.score(X_test, y_test)
 
     # CART
     dtr = DecisionTreeRegressor(max_depth=12,
@@ -80,7 +81,7 @@ if __name__ == '__main__':
     print(f"CART :\nprécision={dtr_precision}\nrmse={dtr_rmse}\nmae={dtr_mae}\n")
 
     # NEURONES
-    mlp = MLPRegressor(hidden_layer_sizes=(100, 100, 100), max_iter=1000)
+    mlp = MLPRegressor(hidden_layer_sizes=(100, 100, 100), max_iter=1000, activation='tanh', learning_rate='adaptive', solver='sgd')
     mlp.fit(X_train, y_train)
     mlp_prediction = mlp.predict(X_test)
 
@@ -90,7 +91,7 @@ if __name__ == '__main__':
     print(f"neuronnes (MLP):\nprécision={mlp_precision}\nrmse={mlp_rmse}\nmae={mlp_mae}\n")
 
     #PLS
-    pls = PLSRegression(n_components=4)
+    pls = PLSRegression(n_components=4, scale=False, max_iter=2)
     pls.fit(X_train, y_train)
     pls_prediction = pls.predict(X_test)
 
