@@ -9,9 +9,9 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.cross_decomposition import PLSRegression
 
 
-def load_and_preprocess_data():
+def load_and_preprocess_data(split=True):
     datarbre = pd.read_csv("Data_Arbre.csv")
-    data_learning = datarbre[['haut_tronc', 'tronc_diam', 'fk_stadedev', 'feuillage', 'fk_nomtech', 'clc_nbr_diag']].copy()
+    data_learning = datarbre[['haut_tronc', 'tronc_diam', 'fk_stadedev', 'feuillage', 'clc_nbr_diag']].copy()
 
     # ENCODING
     ordinal_encoder = OrdinalEncoder(categories=[['Jeune', 'Adulte', 'vieux', 'senescent']])
@@ -23,18 +23,18 @@ def load_and_preprocess_data():
     feuillage_encoded = onehot_encoder.fit_transform(data_learning[["feuillage"]])
     feuillage_encoded_df = pd.DataFrame(feuillage_encoded, columns=onehot_encoder.get_feature_names_out(["feuillage"]))
 
-    nomtech_encoded = onehot_encoder.fit_transform(data_learning[["fk_nomtech"]])
-    nomtech_encoded_df = pd.DataFrame(nomtech_encoded, columns=onehot_encoder.get_feature_names_out(["fk_nomtech"]))
-
     # Drop the original categorical columns and concatenate the encoded columns
-    data_learning.drop(columns=["feuillage", "fk_nomtech"], inplace=True)
-    data_learning = pd.concat([data_learning, feuillage_encoded_df, nomtech_encoded_df], axis=1)
+    data_learning.drop(columns=["feuillage"], inplace=True)
+    data_learning = pd.concat([data_learning, feuillage_encoded_df], axis=1)
 
     # NORMALISATING
     ss = StandardScaler()
     # apply the standardization on the data_learning
     data_learning[["haut_tronc"]] = ss.fit_transform(data_learning[["haut_tronc"]])
     data_learning[["tronc_diam"]] = ss.fit_transform(data_learning[["tronc_diam"]])
+
+    if not split:
+        return pd.concat([data_learning, datarbre["age_estim"]], axis=1)
 
     X = data_learning
     Y = datarbre["age_estim"]

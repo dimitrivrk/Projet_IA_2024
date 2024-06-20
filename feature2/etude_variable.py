@@ -1,89 +1,89 @@
-from sklearn.model_selection import GridSearchCV
-from predictionAge import load_and_preprocess_data, RandomForestRegressor, DecisionTreeRegressor, MLPRegressor, PLSRegression
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Qt5Agg')
+import seaborn as sns
+from sklearn.feature_selection import f_classif
+from predictionAge import load_and_preprocess_data
 
 
-# GRID SEARCH
-# RANDOM FOREST
-def grid_rfr(X_train, y_train):
-    param_rfr = {
-        'n_estimators': [10, 50, 200, 500],
-        'max_depth': [2, 6, 18, 32],
-        'max_leaf_nodes': [5, 25, 75, 150],
-        'max_samples': [0.1, 0.4, 0.8],
-        'min_samples_split': [200, 500, 1000, 2500, 4000],
-    }
-    rfr = RandomForestRegressor()
-    grid_search = GridSearchCV(rfr, param_rfr, cv=5, scoring='neg_mean_squared_error', return_train_score=True)
-    grid_search.fit(X_train, y_train)
-    print("Meilleurs params:", grid_search.best_params_)
-    print("Meilleur score:", grid_search.best_score_)
+def correlations_plot():
+    datarbre = load_and_preprocess_data(split=False)
+    datarbre = datarbre[['haut_tronc', 'tronc_diam', 'fk_stadedev', 'clc_nbr_diag', 'feuillage_Conifère', 'feuillage_Feuillu', 'age_estim']]
+    corr_age_estim = datarbre.corr()['age_estim']
+
+    sns.barplot(x=corr_age_estim.index, y=corr_age_estim.values)
+    plt.xticks(rotation=90)
+    plt.subplots_adjust(bottom=0.3)
+    plt.title("Corrélation des variables quantitatives avec l'âge estimé")
+
+    data = pd.read_csv('Data_Arbre.csv')
+    # select only the columns that are categorical
+    data = data[['age_estim', 'clc_quartier', 'fk_port', 'fk_nomtech', 'remarquable']]
+
+    # encode them and split them, else there are too many categories to plot
+    data_quartier = pd.get_dummies(data, columns=['clc_quartier']).drop(columns=['fk_port', 'fk_nomtech', 'remarquable'])
+    corr_age_estim = data_quartier.corr()['age_estim']
+    plt.figure()
+    sns.barplot(x=corr_age_estim.index, y=corr_age_estim.values)
+    plt.xticks(rotation=90)
+    plt.subplots_adjust(bottom=0.3)
+    plt.title("Corrélation des quartiers avec l'âge estimé")
+
+    data_port = pd.get_dummies(data, columns=['fk_port']).drop(columns=['clc_quartier', 'fk_nomtech', 'remarquable'])
+    corr_age_estim = data_port.corr()['age_estim']
+    plt.figure()
+    sns.barplot(x=corr_age_estim.index, y=corr_age_estim.values)
+    plt.xticks(rotation=90)
+    plt.subplots_adjust(bottom=0.3)
+    plt.title("Corrélation de fk_port avec l'âge estimé")
+
+    data_nomtech = pd.get_dummies(data, columns=['fk_nomtech']).drop(columns=['fk_port', 'clc_quartier', 'remarquable'])
+    corr_age_estim = data_nomtech.corr()['age_estim']
+    plt.figure()
+    sns.barplot(x=corr_age_estim.index, y=corr_age_estim.values)
+    plt.xticks(rotation=90)
+    plt.subplots_adjust(bottom=0.3)
+    plt.title("Corrélation de fk_nomtech avec l'âge estimé")
+
+    data_remarquable = pd.get_dummies(data, columns=['remarquable']).drop(columns=['fk_port', 'fk_nomtech', 'clc_quartier'])
+    corr_age_estim = data_remarquable.corr()['age_estim']
+    plt.figure()
+    sns.barplot(x=corr_age_estim.index, y=corr_age_estim.values)
+    plt.xticks(rotation=90)
+    plt.subplots_adjust(bottom=0.3)
+    plt.title("Corrélation de remarquable avec l'âge estimé")
 
 
-# CART
-def grid_dtrX_train(X_train, y_train):
-    param_dtr = {
-        'min_samples_split': [1, 2, 3, 4],
-        'min_samples_leaf': [1, 2, 3, 4],
-        'min_impurity_decrease': [0.1, 0.3, 0.5, 0.8],
-        'max_depth': [3, 6, 9, 12, 15, 18, 21, 24, 27, 30]
-    }
-    dtr = DecisionTreeRegressor()
-    grid_search = GridSearchCV(dtr, param_dtr, cv=5, scoring='neg_mean_squared_error', return_train_score=True)
-    grid_search.fit(X_train, y_train)
-    print("Meilleurs params:", grid_search.best_params_)
-    print("Meilleur score:", grid_search.best_score_)
+def anova_plot():
+    """
+    perform anova test with categorical variables and plot the results
+    :return:
+    """
+    data = pd.read_csv('Data_Arbre.csv')
+    # select only the columns that are categorical
+    data = data[['age_estim', 'clc_quartier', 'fk_port', 'fk_nomtech', 'remarquable']]
 
+    mean_p_values = {}
+    for variable in ['clc_quartier', 'fk_port', 'fk_nomtech', 'remarquable']:
+        data_encoded = pd.get_dummies(data[[variable, 'age_estim']])
 
-# MLP
-def grid_mlp(X_train, y_train):
-    param_mlp = {
-        'hidden_layer_sizes': [(50, 50), (100,)],
-        'activation': ["identity", "logistic", "tanh", "relu"],
-        'solver': ["lbfgs", "sgd", "adam"],
-        'learning_rate': ['constant', 'adaptive'],
-        'max_iter': [500, 800]
-    }
-    mlp = MLPRegressor()
-    grid_search = GridSearchCV(mlp, param_mlp, cv=5, scoring='neg_mean_squared_error', return_train_score=True)
-    grid_search.fit(X_train, y_train)
-    print("Meilleurs params:", grid_search.best_params_)
-    print("Meilleur score:", grid_search.best_score_)
+        X = data_encoded.drop(columns=['age_estim'])
+        y = data_encoded['age_estim']
 
+        _, p_values = f_classif(X, y)
+        mean_p_values[variable] = np.mean(p_values)
 
-def grid_pls(X_train, y_train):
-    param_pls = {
-        'n_components': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        'scale': [True, False],
-        'max_iter': [100, 200, 300, 400, 500]
-    }
-    pls = PLSRegression()
-    grid_search = GridSearchCV(pls, param_pls, cv=5, scoring='neg_mean_squared_error', return_train_score=True)
-    grid_search.fit(X_train, y_train)
-    print("Meilleurs params:", grid_search.best_params_)
-    print("Meilleur score:", grid_search.best_score_)
-
-
-def grid_search_all(X_train, y_train):
-    grid_rfr(X_train, y_train)
-    grid_dtrX_train(X_train, y_train)
-    grid_mlp(X_train, y_train)
-    grid_pls(X_train, y_train)
-
-
-def cor_age_diam(data):
-    filtered_data_tronc_diam = data[data["tronc_diam"] != 0]
-    correlation_value_tronc_diam = filtered_data_tronc_diam[["age_estim", "tronc_diam"]].corr().iloc[0, 1]
-    print(correlation_value_tronc_diam)
-    correlation_matrix_tronc_diam = filtered_data_tronc_diam[["age_estim", "tronc_diam"]].corr()
-    print(correlation_matrix_tronc_diam)
-
-#cor_age_diam(datarbre)
-
-#print(datarbre[['haut_tronc', 'tronc_diam', 'fk_stadedev', 'feuillage', 'fk_nomtech', 'clc_nbr_diag', 'age_estim']].corr())
-
-#grid_rfr(X_train, y_train)
+    # Plot mean p-values
+    plt.figure()
+    sns.barplot(x=list(mean_p_values.keys()), y=list(mean_p_values.values()))
+    plt.title("Mean p-values of categorical variables with the estimated age")
 
 
 if __name__ == '__main__':
-    X_train, X_test, y_train, y_test = load_and_preprocess_data()
-    grid_search_all(X_train, y_train)
+    correlations_plot()
+
+    anova_plot()
+
+    plt.show()
