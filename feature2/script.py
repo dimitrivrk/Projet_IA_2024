@@ -1,7 +1,5 @@
 import pandas as pd
-import numpy as np
 from predictionAge import load_and_preprocess_data
-from json import loads, dumps
 import joblib
 from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder, StandardScaler
 from sklearn.ensemble import RandomForestRegressor
