@@ -8,7 +8,7 @@ X_train, X_test, y_train, y_test = load_and_preprocess_data()
 
 #GRID SEARCH
 #RANDOM FOREST
-def grid_rfr(X_train, y_train):
+def grid_rfr(X_train, y_train, rfr):
     param_rfr = {
         'n_estimators': [10, 50, 200, 500],
         'max_depth': [2, 6, 18, 32],
