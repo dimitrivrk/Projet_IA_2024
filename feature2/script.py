@@ -1,12 +1,28 @@
 import pandas as pd
 import numpy as np
-from predictionAge import load_and_preprocess_data, dico
+from predictionAge import load_and_preprocess_data
 from json import loads, dumps
 import joblib
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 
 
 X_train, X_test, y_train, y_test = load_and_preprocess_data()
+
+
+def dico():
+    # CREATION DU FICHIER PLK
+    dico = {
+        'or': ordinal_encoder,
+        'oh': onehot_encoder,
+        'ss': ss,
+        'rf': rfr,
+        # 'dt': dtr,
+        # 'ml': mlp,
+        # 'pl': pls,
+    }
+    with open('fichier_joblib.pkl', 'wb') as file:
+        joblib.dump(dico, file)
+        print("good")
 
 
 def script(JSON_fichier, dico):

@@ -7,8 +7,6 @@ from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.neural_network import MLPRegressor
 from sklearn.cross_decomposition import PLSRegression
-from sklearn.model_selection import GridSearchCV
-import joblib
 
 
 def load_and_preprocess_data():
@@ -47,77 +45,56 @@ def load_and_preprocess_data():
                                                         test_size=0.2,
                                                         random_state=42)
 
-    return X_train, X_test, y_train, y_test, ordinal_encoder, onehot_encoder, ss
+    return X_train, X_test, y_train, y_test
 
 
-X_train, X_test, y_train, y_test, ordinal_encoder, onehot_encoder, ss = load_and_preprocess_data()
+if __name__ == '__main__':
+    X_train, X_test, y_train, y_test = load_and_preprocess_data()
 
-# RANDOM FOREST
-rfr = RandomForestRegressor(n_estimators=200,
-                            min_samples_split=2,
-                            max_samples=0.8,
-                            max_leaf_nodes=150,
-                            max_depth=32,
-                            random_state=42)
-rfr.fit(X_train, y_train)
-rfr_prediction = rfr.predict(X_test)
-print(rfr_prediction)
-rfr_precision = r2_score(y_test, rfr_prediction)
-rfr_rmse = np.sqrt(mean_squared_error(y_test, rfr_prediction))
-rfr_mae = mean_absolute_error(y_test, rfr_prediction)
-print(f"Random Forest :\nprécision={rfr_precision}\nrmse={rfr_rmse}\nmae={rfr_mae}\n")
+    # RANDOM FOREST
+    rfr = RandomForestRegressor(n_estimators=200,
+                                min_samples_split=2,
+                                max_samples=0.8,
+                                max_leaf_nodes=150,
+                                max_depth=32,
+                                random_state=42)
+    rfr.fit(X_train, y_train)
+    rfr_prediction = rfr.predict(X_test)
+    print(rfr_prediction)
+    rfr_precision = r2_score(y_test, rfr_prediction)
+    rfr_rmse = np.sqrt(mean_squared_error(y_test, rfr_prediction))
+    rfr_mae = mean_absolute_error(y_test, rfr_prediction)
+    print(f"Random Forest :\nprécision={rfr_precision}\nrmse={rfr_rmse}\nmae={rfr_mae}\n")
 
-#CART
-dtr = DecisionTreeRegressor(max_depth=12,
-                            min_impurity_decrease=0.1,
-                            min_samples_leaf=3,
-                            min_samples_split=4)
-dtr.fit(X_train, y_train)
-dtr_prediction = dtr.predict(X_test)
+    # CART
+    dtr = DecisionTreeRegressor(max_depth=12,
+                                min_impurity_decrease=0.1,
+                                min_samples_leaf=3,
+                                min_samples_split=4)
+    dtr.fit(X_train, y_train)
+    dtr_prediction = dtr.predict(X_test)
 
-dtr_precision = r2_score(y_test, dtr_prediction)
-dtr_rmse = np.sqrt(mean_squared_error(y_test, dtr_prediction))
-dtr_mae = mean_absolute_error(y_test, dtr_prediction)
-print(f"CART :\nprécision={dtr_precision}\nrmse={dtr_rmse}\nmae={dtr_mae}\n")
+    dtr_precision = r2_score(y_test, dtr_prediction)
+    dtr_rmse = np.sqrt(mean_squared_error(y_test, dtr_prediction))
+    dtr_mae = mean_absolute_error(y_test, dtr_prediction)
+    print(f"CART :\nprécision={dtr_precision}\nrmse={dtr_rmse}\nmae={dtr_mae}\n")
 
-#NEURONES
-mlp = MLPRegressor(hidden_layer_sizes=(100, 100, 100), max_iter=1000)
-mlp.fit(X_train, y_train)
-mlp_prediction = mlp.predict(X_test)
+    # NEURONES
+    mlp = MLPRegressor(hidden_layer_sizes=(100, 100, 100), max_iter=1000)
+    mlp.fit(X_train, y_train)
+    mlp_prediction = mlp.predict(X_test)
 
-mlp_precision = r2_score(y_test, mlp_prediction)
-mlp_rmse = np.sqrt(mean_squared_error(y_test, mlp_prediction))
-mlp_mae = mean_absolute_error(y_test, mlp_prediction)
-print(f"neuronnes (MLP):\nprécision={mlp_precision}\nrmse={mlp_rmse}\nmae={mlp_mae}\n")
+    mlp_precision = r2_score(y_test, mlp_prediction)
+    mlp_rmse = np.sqrt(mean_squared_error(y_test, mlp_prediction))
+    mlp_mae = mean_absolute_error(y_test, mlp_prediction)
+    print(f"neuronnes (MLP):\nprécision={mlp_precision}\nrmse={mlp_rmse}\nmae={mlp_mae}\n")
 
-#PLS
-pls = PLSRegression(n_components=4)
-pls.fit(X_train, y_train)
-pls_prediction = pls.predict(X_test)
+    #PLS
+    pls = PLSRegression(n_components=4)
+    pls.fit(X_train, y_train)
+    pls_prediction = pls.predict(X_test)
 
-pls_precision = r2_score(y_test, pls_prediction)
-pls_rmse = np.sqrt(mean_squared_error(y_test, pls_prediction))
-pls_mae = mean_absolute_error(y_test, pls_prediction)
-print(f"PLS:\nprécision={pls_precision}\nrmse={pls_rmse}\nmae={pls_mae}\n")
-
-
-
-
-def dico():
-    # CREATION DU FICHIER PLK
-    dico = {
-        'or': ordinal_encoder,
-        'oh': onehot_encoder,
-        'ss': ss,
-        'rf': rfr,
-        # 'dt': dtr,
-        # 'ml': mlp,
-        # 'pl': pls,
-    }
-    with open('fichier_joblib.pkl', 'wb') as file:
-        joblib.dump(dico, file)
-        print("good")
-
-
-
-
+    pls_precision = r2_score(y_test, pls_prediction)
+    pls_rmse = np.sqrt(mean_squared_error(y_test, pls_prediction))
+    pls_mae = mean_absolute_error(y_test, pls_prediction)
+    print(f"PLS:\nprécision={pls_precision}\nrmse={pls_rmse}\nmae={pls_mae}\n")
