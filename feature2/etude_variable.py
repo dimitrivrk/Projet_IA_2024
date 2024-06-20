@@ -2,10 +2,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('Qt5Agg')
 import seaborn as sns
 from sklearn.feature_selection import f_classif
 from predictionAge import load_and_preprocess_data
+matplotlib.use('Qt5Agg')
 
 
 def correlations_plot():
