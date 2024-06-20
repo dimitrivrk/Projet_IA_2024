@@ -47,10 +47,10 @@ def load_and_preprocess_data():
                                                         test_size=0.2,
                                                         random_state=42)
 
-    return X_train, X_test, y_train, y_test
+    return X_train, X_test, y_train, y_test, ordinal_encoder, onehot_encoder, ss
 
 
-X_train, X_test, y_train, y_test = load_and_preprocess_data()
+X_train, X_test, y_train, y_test, ordinal_encoder, onehot_encoder, ss = load_and_preprocess_data()
 
 # RANDOM FOREST
 rfr = RandomForestRegressor(n_estimators=200,
@@ -61,7 +61,7 @@ rfr = RandomForestRegressor(n_estimators=200,
                             random_state=42)
 rfr.fit(X_train, y_train)
 rfr_prediction = rfr.predict(X_test)
-
+print(rfr_prediction)
 rfr_precision = r2_score(y_test, rfr_prediction)
 rfr_rmse = np.sqrt(mean_squared_error(y_test, rfr_prediction))
 rfr_mae = mean_absolute_error(y_test, rfr_prediction)
@@ -103,42 +103,21 @@ print(f"PLS:\nprécision={pls_precision}\nrmse={pls_rmse}\nmae={pls_mae}\n")
 
 
 
-#CREATION DU FICHIER PLK
-dico = {
-    'or': ordinal_encoder,
-    'oh': onehot_encoder,
-    'ss': standscal,
-    'rf': rfr,
-    #'dt': dtr,
-    #'ml': mlp,
-    #'pl': pls,
-}
-
-with open('fichier_joblib.pkl', 'wb') as file:
-    joblib.dump(dico, file)
-    print("good")
-
-
-def script(JSON_fichier):
-
-    new_data = pd.read_csv(JSON_fichier)
-    print(new_data['fk_nomtech'])
-
-    dico = joblib.load('fichier_joblib.pkl')
-
-    new_data[["fk_stadedev"]] = dico['or'].transform(new_data[["fk_stadedev"]])
-    new_data[["fk_nomtech"]] = dico['oh'].transform(new_data[["fk_nomtech"]])
-
-    new_data = dico['ss'].transform(new_data)
-
-    X = new_data[['haut_tronc', 'tronc_diam', 'fk_stadedev', 'feuillage', 'fk_nomtech', 'clc_nbr_diag']]
-    Y = new_data[['age_estim']]
-
-    print(dico['rf'])
-
-    rfr_precision = r2_score(y_test, rfr_prediction)
-    rfr_rmse = np.sqrt(mean_squared_error(y_test, rfr_prediction))
-    rfr_mae = mean_absolute_error(y_test, rfr_prediction)
+def dico():
+    # CREATION DU FICHIER PLK
+    dico = {
+        'or': ordinal_encoder,
+        'oh': onehot_encoder,
+        'ss': ss,
+        'rf': rfr,
+        # 'dt': dtr,
+        # 'ml': mlp,
+        # 'pl': pls,
+    }
+    with open('fichier_joblib.pkl', 'wb') as file:
+        joblib.dump(dico, file)
+        print("good")
 
 
-script("Data_Arbre.csv")
+
+
