@@ -5,7 +5,7 @@ from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 from sklearn.metrics import mean_squared_error, r2_score
 
 # Charger les données
-data = pd.read_csv("Data_Arbre.csv")
+data = pd.read_csv("../Data_Arbre.csv")
 
 class Node:
     def __init__(self, feature_index=None, threshold=None, left=None, right=None, value=None):
