@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-
 from size_classification import *
 from anomaly_detection import *
 

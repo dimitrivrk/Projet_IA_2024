@@ -77,7 +77,7 @@ def script(JSON_filename, MODELS_filename='fichier_joblib.pkl'):
     :return: a data frame with only one column : 'age_pred' in a JSON file
     """
     datarbre = pd.read_csv(JSON_filename)
-    models = joblib.load('fichier_joblib.pkl')
+    models = joblib.load(MODELS_filename)
 
     X = datarbre[['haut_tronc', 'tronc_diam', 'fk_stadedev', 'feuillage', 'clc_nbr_diag']].copy()
     Y = datarbre[['age_estim']]
@@ -101,7 +101,7 @@ def script(JSON_filename, MODELS_filename='fichier_joblib.pkl'):
 
 
 if __name__ == '__main__':
-    script("Data_Arbre.csv")
+    script("Data_Arbre.json")
 
     age_pred = pd.read_json('age_predicted.json')
     print(age_pred.head(10))
