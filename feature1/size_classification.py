@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 import matplotlib.colors as mcolors
 import folium
-from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
