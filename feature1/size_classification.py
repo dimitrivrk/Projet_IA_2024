@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 import matplotlib.colors as mcolors
 import folium
-from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
+from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder, StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
@@ -19,15 +19,16 @@ def load_data() -> 'dataframes':
     # choose the columns to keep
     df_learning = df[['haut_tot', 'haut_tronc', 'tronc_diam', 'fk_port']].copy()
 
-    # use OrdinalEncoder to encode fk_stadedev
-    # encoder_stadedev = OrdinalEncoder(categories=[['Jeune', 'Adulte', 'vieux', 'senescent']])
-    # df_learning[['fk_stadedev']] = encoder_stadedev.fit_transform(df_learning[['fk_stadedev']])
     # use OneHotEncoder to encode fk_port
     encoder_port = OneHotEncoder(sparse_output=False)
     fk_port_encoded = encoder_port.fit_transform(df_learning[['fk_port']])
     fk_port_encoded_df = pd.DataFrame(fk_port_encoded, columns=encoder_port.get_feature_names_out(['fk_port']))
     df_learning.drop(columns=['fk_port'], inplace=True)
     df_learning = pd.concat([df_learning, fk_port_encoded_df], axis=1)
+
+    # use StandardScaler to normalize the data
+    standard_scaler = StandardScaler()
+    df_learning[['haut_tot', 'haut_tronc', 'tronc_diam']] = standard_scaler.fit_transform(df_learning[['haut_tot', 'haut_tronc', 'tronc_diam']])
 
     return df, df_learning
 
